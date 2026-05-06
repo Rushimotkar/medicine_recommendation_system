@@ -28,5 +28,4 @@ def build_doctor_map(doctors: list):
             tooltip=doc["name"]
         ).add_to(m)
 
-   ## return m._repr_html_()
     return m.get_root().render()

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Verify OTP | Medico{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-6 relative overflow-hidden">
+    <!-- Decor -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[120px] pointer-events-none"></div>
+    
+    <div class="w-full max-w-md relative z-10">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-serif font-bold text-primary mb-2">Verify OTP</h1>
+            <p class="text-primary/40 font-medium uppercase tracking-widest text-[10px]">Sent to {{ mobile_number }}</p>
+        </div>
+
+        <div class="glass p-10 rounded-[3rem] shadow-3xl border-white/40">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="mb-8 p-4 bg-secondary/10 border border-secondary/20 rounded-2xl">
+                        {% for message in messages %}
+                            <p class="text-xs text-secondary font-bold text-center">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form action="/verify-otp" method="POST" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">6-Digit Code</label>
+                    <div class="relative">
+                        <i data-lucide="shield-check" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20"></i>
+                        <input type="text" name="otp" required maxlength="6" class="w-full pl-12 pr-6 py-4 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all text-center tracking-[0.5em] text-xl" placeholder="••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-5 bg-primary text-white font-bold rounded-2xl hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group">
+                    Verify & Sign In
+                    <i data-lucide="check" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                </button>
+            </form>
+
+            <div class="mt-10 pt-8 border-t border-primary/5 text-center">
+                <p class="text-sm text-primary/40 font-medium">
+                    Didn't receive code? 
+                    <a href="/login/mobile" class="text-secondary font-bold hover:underline ml-1">Resend</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

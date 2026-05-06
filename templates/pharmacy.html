@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Finder | Medico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pharmacy-card {
+        background: white;
+        border: 1px solid rgba(11, 37, 69, 0.05);
+        border-radius: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    .pharmacy-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px rgba(11, 37, 69, 0.05);
+        border-color: var(--secondary);
+    }
+    .map-container {
+        border-radius: 2rem;
+        overflow: hidden;
+        border: 1px solid rgba(11, 37, 69, 0.1);
+        height: 600px;
+        box-shadow: 0 20px 50px rgba(11, 37, 69, 0.05);
+    }
+    .map-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    .search-input {
+        background: white;
+        border: 1px solid rgba(11, 37, 69, 0.1);
+        border-radius: 1.5rem;
+        padding: 1.25rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    .search-input:focus {
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 4px rgba(27, 108, 168, 0.05);
+        outline: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pb-20">
+    <!-- PAGE HEADER -->
+    <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <span class="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-[0.2em]">Medical Logistics</span>
+        <h1 class="text-5xl font-serif font-bold text-primary">Find <span class="text-secondary">Pharmacies</span> Near You</h1>
+        <p class="text-primary/60 font-medium leading-relaxed">Access 24/7 medical supplies and professional medication dispensaries in your immediate vicinity.</p>
+    </div>
+
+    <!-- SEARCH SECTION -->
+    <div class="max-w-xl mx-auto mb-20">
+        <form method="POST" class="relative group">
+            <input type="text" name="location" placeholder="Enter city or zip code (e.g. New York)" value="{{ location or '' }}" required class="search-input w-full pr-32 text-lg shadow-xl shadow-primary/5">
+            <button type="submit" class="absolute right-2 top-2 bottom-2 px-6 bg-primary text-white rounded-xl font-bold hover:bg-secondary transition-all flex items-center gap-2">
+                <i data-lucide="search" class="w-4 h-4"></i> Find
+            </button>
+        </form>
+        <div class="mt-4 flex justify-center gap-4 text-[10px] font-mono text-primary/30 uppercase tracking-widest font-bold">
+            <span class="flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Verified Partners</span>
+            <span class="flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> 24/7 Availability</span>
+        </div>
+    </div>
+
+    <!-- RESULTS SECTION -->
+    {% if pharmacies %}
+    <div class="grid lg:grid-cols-12 gap-10">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-serif font-bold text-primary">Nearby Results</h3>
+                <span class="text-xs font-bold text-secondary bg-secondary/10 px-3 py-1 rounded-full">{{ pharmacies | length }} found</span>
+            </div>
+            
+            <div class="space-y-4 max-h-[600px] overflow-y-auto pr-4 no-scrollbar">
+                {% for pharm in pharmacies %}
+                <div class="pharmacy-card p-6">
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+                            <i data-lucide="pill" class="w-6 h-6"></i>
+                        </div>
+                        <a href="https://www.google.com/maps?q={{ pharm.latitude }},{{ pharm.longitude }}" target="_blank" class="w-10 h-10 rounded-xl bg-bgLight flex items-center justify-center text-primary/40 hover:text-secondary hover:bg-secondary/10 transition-all">
+                            <i data-lucide="map-pin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                    <h5 class="text-lg font-bold text-primary mb-2">{{ pharm.name }}</h5>
+                    <p class="text-sm text-primary/40 font-medium mb-6 leading-relaxed">{{ pharm.full_address }}</p>
+                    <a href="https://www.google.com/maps?q={{ pharm.latitude }},{{ pharm.longitude }}" target="_blank" class="w-full py-2.5 bg-primary/5 text-primary text-xs font-bold rounded-xl hover:bg-primary hover:text-white transition-all inline-block text-center uppercase tracking-widest">
+                        View Directions
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="lg:col-span-8">
+            <div class="map-container relative">
+                {% if map_html %}
+                    <div class="w-full h-full">
+                        {{ map_html | safe }}
+                    </div>
+                {% else %}
+                    <div class="absolute inset-0 bg-bgLight flex flex-col items-center justify-center space-y-4">
+                        <div class="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center text-primary/20">
+                            <i data-lucide="map" class="w-10 h-10"></i>
+                        </div>
+                        <p class="text-primary/40 font-bold uppercase tracking-widest text-sm">Interactive Map Unavailable</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% elif not error and location %}
+    <div class="text-center py-20">
+        <div class="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6 text-primary/20">
+            <i data-lucide="frown" class="w-12 h-12"></i>
+        </div>
+        <h3 class="text-2xl font-serif font-bold text-primary mb-2">No Pharmacies Found</h3>
+        <p class="text-primary/60 font-medium">Try a different location or check for typos.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

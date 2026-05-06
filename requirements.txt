@@ -7,3 +7,8 @@ python-dotenv
 requests
 flask
 folium
+pymongo
+flask-login
+werkzeug
+authlib
+certifi

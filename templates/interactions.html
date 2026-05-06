@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Interaction Checker | Medico{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pt-16 pb-24">
+    <!-- PAGE HEADER -->
+    <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <span class="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-[0.2em]">Pharmacology Safety</span>
+        <h1 class="text-5xl font-serif font-bold text-primary">Medicine <span class="text-secondary">Interaction</span> Checker</h1>
+        <p class="text-primary/60 font-medium leading-relaxed">Ensure your safety by verifying potential contraindications between multiple medications before administration.</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto">
+        <div class="premium-card p-8 lg:p-12">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-primary">Clinical Analysis</h3>
+                    <p class="text-xs text-primary/40 font-mono uppercase tracking-widest">Database Sync: v2.4.1</p>
+                </div>
+            </div>
+
+            <form method="POST" class="space-y-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Medication A</label>
+                        <div class="relative">
+                            <i data-lucide="pill" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20"></i>
+                            <input type="text" name="medicine_1" value="{{ med1|default('') }}" required placeholder="e.g. Aspirin" class="w-full pl-12 pr-6 py-4 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Medication B</label>
+                        <div class="relative">
+                            <i data-lucide="pill" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20"></i>
+                            <input type="text" name="medicine_2" value="{{ med2|default('') }}" required placeholder="e.g. Warfarin" class="w-full pl-12 pr-6 py-4 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-5 bg-primary text-white font-bold rounded-2xl hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group">
+                    Analyze Interaction
+                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+
+            {% if result %}
+            <div class="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="p-8 rounded-[2rem] border-2 {% if 'Warning' in result or 'Dangerous' in result %} bg-red-50/50 border-red-100 text-red-600 {% else %} bg-accent/5 border-accent/10 text-primary {% endif %}">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-10 h-10 rounded-full {% if 'Warning' in result or 'Dangerous' in result %} bg-red-100 text-red-600 {% else %} bg-accent/20 text-accent {% endif %} flex items-center justify-center">
+                            <i data-lucide="{% if 'Warning' in result or 'Dangerous' in result %}alert-octagon{% else %}check-circle-2{% endif %}" class="w-5 h-5"></i>
+                        </div>
+                        <h5 class="text-lg font-bold">Analysis Result</h5>
+                    </div>
+                    <p class="text-base font-medium leading-relaxed opacity-90">{{ result }}</p>
+                </div>
+                
+                <div class="mt-6 p-6 bg-primary/5 rounded-2xl flex items-start gap-4">
+                    <i data-lucide="info" class="w-5 h-5 text-primary/40 mt-0.5"></i>
+                    <p class="text-[11px] text-primary/40 font-medium leading-relaxed">
+                        Disclaimer: This tool is for informational purposes only and does not replace professional medical advice. Always consult your physician or pharmacist before starting or stopping any medication.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,111 +1,457 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediGuide</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: #070E1C;
-            color: #C8D8E8;
-            font-family: 'DM Sans', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .hero {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .badge {
-            display: inline-block;
-            background: rgba(10,191,163,0.1);
-            border: 1px solid rgba(10,191,163,0.3);
-            color: #0ABFA3;
-            padding: 6px 18px;
-            border-radius: 100px;
-            font-size: 12px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 28px;
-        }
-        h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: clamp(40px, 7vw, 80px);
-            font-weight: 800;
-            color: #EEF4FF;
-            line-height: 1.1;
-            margin-bottom: 20px;
-        }
-        h1 span { color: #0ABFA3; }
-        p {
-            font-size: 18px;
-            color: #5A7090;
-            max-width: 480px;
-            margin: 0 auto 40px;
-            line-height: 1.7;
-        }
-        .btn {
-            background: #0ABFA3;
-            color: #070E1C;
-            padding: 16px 40px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            font-size: 16px;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-        .btn:hover {
-            background: #EEF4FF;
-            transform: translateY(-3px);
-        }
-        .stats {
-            display: flex;
-            gap: 60px;
-            justify-content: center;
-            margin-top: 60px;
-            padding-top: 40px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        .stat-num {
-            font-family: 'Syne', sans-serif;
-            font-size: 36px;
-            font-weight: 800;
-            color: #EEF4FF;
-        }
-        .stat-num span { color: #0ABFA3; }
-        .stat-label {
-            font-size: 12px;
-            color: #5A7090;
-            margin-top: 4px;
-        }
-    </style>
-</head>
-<body>
-    <div class="hero">
-        <div class="badge">🧬 AI Powered Healthcare</div>
-        <h1>Smart <span>Medicine</span><br>Recommendation</h1>
-        <p>Describe your symptoms and get instant medicine recommendations with nearby doctor locations.</p>
-        <a href="/predict" class="btn">Get Started →</a>
-        <div class="stats">
-            <div>
-                <div class="stat-num">98<span>%</span></div>
-                <div class="stat-label">Accuracy</div>
+{% extends "base.html" %}
+
+{% block title %}Medico | Your Health, Guided with Precision{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Background Animation */
+    .medical-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: radial-gradient(circle at 50% 50%, #eef6f9 0%, #F8FAFB 100%);
+        overflow: hidden;
+    }
+
+    .pulse-wave {
+        position: absolute;
+        bottom: 10%;
+        left: 0;
+        width: 100%;
+        height: 200px;
+        opacity: 0.1;
+        background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg"><path d="M0 50 Q 250 10, 500 50 T 1000 50" fill="none" stroke="%231B6CA8" stroke-width="2"/></svg>') repeat-x;
+        animation: waveMove 10s linear infinite;
+    }
+
+    @keyframes waveMove {
+        0% { background-position: 0 0; }
+        100% { background-position: 1000px 0; }
+    }
+
+    .feature-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(76, 201, 164, 0.15);
+    }
+
+    .cta-pulse::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--warm);
+        border-radius: 9999px;
+        animation: pulse-ring 2s infinite;
+        z-index: -1;
+    }
+
+    .marquee-container {
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .marquee-content {
+        display: inline-block;
+        animation: marquee 30s linear infinite;
+    }
+
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    .step-connector {
+        position: absolute;
+        top: 2rem;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(to right, var(--accent), transparent);
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<section class="relative min-h-[90vh] flex items-center px-6 -mt-24 overflow-hidden">
+    <div class="medical-bg">
+        <div class="pulse-wave"></div>
+        <div id="particles-container"></div>
+    </div>
+
+    <div class="container mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10 pt-24">
+        <div class="space-y-8">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent font-mono text-xs uppercase tracking-widest">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                AI-Driven Medical Excellence
             </div>
-            <div>
-                <div class="stat-num">120<span>+</span></div>
-                <div class="stat-label">Conditions</div>
+            
+            <h1 class="text-6xl md:text-7xl font-serif font-bold leading-[1.1] text-primary">
+                Your Health, <br/>
+                <span class="text-secondary italic">Guided with Precision.</span>
+            </h1>
+            
+            <p class="text-lg text-primary/70 max-w-lg leading-relaxed">
+                Experience the future of healthcare. Medico combines advanced AI diagnostics with a network of world-class specialists to ensure your wellness is never left to chance.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
+                <a href="/predict" class="cta-pulse relative px-8 py-4 bg-warm text-white rounded-full font-bold text-lg shadow-xl shadow-warm/20 hover:scale-105 transition-transform flex items-center gap-3">
+                    Symptom Checker <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+                <a href="/doctors" class="px-8 py-4 border-2 border-primary/10 rounded-full font-bold text-lg hover:border-primary/30 transition-all text-primary/80">
+                    Find a Specialist
+                </a>
             </div>
-            <div>
-                <div class="stat-num">5<span>k+</span></div>
-                <div class="stat-label">Doctors</div>
+
+            <div class="flex items-center gap-6 pt-8 border-t border-primary/5">
+                <div class="flex -space-x-4">
+                    <img src="https://i.pravatar.cc/100?u=1" class="w-12 h-12 rounded-full border-4 border-white" alt="Doctor">
+                    <img src="https://i.pravatar.cc/100?u=2" class="w-12 h-12 rounded-full border-4 border-white" alt="Doctor">
+                    <img src="https://i.pravatar.cc/100?u=3" class="w-12 h-12 rounded-full border-4 border-white" alt="Doctor">
+                </div>
+                <div>
+                    <div class="flex items-center gap-1 text-warm">
+                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                    </div>
+                    <p class="text-sm font-medium text-primary/60">Trusted by 5,000+ Specialists</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="absolute -inset-4 bg-accent/10 blur-3xl rounded-full"></div>
+            <div class="relative glass rounded-[2.5rem] p-4 shadow-2xl overflow-hidden border border-white/50">
+                <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000" alt="App Preview" class="rounded-[2rem] w-full object-cover aspect-[4/3] shadow-inner">
+                <div class="absolute bottom-10 left-10 glass p-6 rounded-2xl shadow-xl border-l-4 border-accent animate-bounce-slow">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-accent/20 p-2 rounded-lg">
+                            <i data-lucide="heart-pulse" class="text-accent w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-mono text-accent font-bold uppercase">Vital Signs</p>
+                            <p class="text-xl font-bold">Stable • 72 BPM</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</section>
+
+<!-- STATS BAR -->
+<div class="bg-primary py-12">
+    <div class="container mx-auto px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="space-y-1">
+            <div class="text-4xl font-serif font-bold text-white flex justify-center items-center gap-1">
+                <span class="counter" data-target="10">0</span>M+
+            </div>
+            <p class="text-accent text-xs font-mono uppercase tracking-widest">Active Users</p>
+        </div>
+        <div class="space-y-1">
+            <div class="text-4xl font-serif font-bold text-white flex justify-center items-center gap-1">
+                <span class="counter" data-target="50">0</span>K+
+            </div>
+            <p class="text-accent text-xs font-mono uppercase tracking-widest">Doctors</p>
+        </div>
+        <div class="space-y-1">
+            <div class="text-4xl font-serif font-bold text-white flex justify-center items-center gap-1">
+                <span class="counter" data-target="98">0</span>%
+            </div>
+            <p class="text-accent text-xs font-mono uppercase tracking-widest">Accuracy</p>
+        </div>
+        <div class="space-y-1">
+            <div class="text-4xl font-serif font-bold text-white flex justify-center items-center gap-1">
+                24/7
+            </div>
+            <p class="text-accent text-xs font-mono uppercase tracking-widest">Support</p>
+        </div>
+    </div>
+</div>
+
+<!-- FEATURES SECTION -->
+<section id="features" class="py-32 px-6 lg:px-12 bg-bgLight">
+    <div class="container mx-auto text-center mb-20">
+        <h2 class="text-accent font-mono text-xs uppercase tracking-[0.3em] mb-4">Precision Services</h2>
+        <h3 class="text-5xl font-serif font-bold text-primary mb-6">Designed for Your Wellbeing</h3>
+        <p class="text-primary/60 max-w-2xl mx-auto text-lg leading-relaxed">
+            We've combined clinical rigor with modern technology to provide a comprehensive suite of healthcare services that adapt to your unique lifestyle.
+        </p>
+    </div>
+
+    <div class="container mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="feature-card glass p-8 rounded-[2rem] border border-primary/5 group">
+            <div class="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-secondary group-hover:text-white transition-all duration-500">
+                <i data-lucide="stethoscope" class="w-8 h-8"></i>
+            </div>
+            <h4 class="text-2xl font-serif font-bold mb-4">Symptom Analysis</h4>
+            <p class="text-primary/60 leading-relaxed mb-6">
+                Advanced AI algorithms analyze your symptoms against millions of medical records for instant, accurate health assessments.
+            </p>
+            <a href="/predict" class="inline-flex items-center gap-2 text-secondary font-bold group-hover:gap-4 transition-all">
+                Learn more <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+
+        <div class="feature-card glass p-8 rounded-[2rem] border border-primary/5 group">
+            <div class="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-accent group-hover:text-white transition-all duration-500">
+                <i data-lucide="users" class="w-8 h-8"></i>
+            </div>
+            <h4 class="text-2xl font-serif font-bold mb-4">Doctor Matching</h4>
+            <p class="text-primary/60 leading-relaxed mb-6">
+                Our intelligent engine matches you with the right specialist based on your specific condition, location, and insurance.
+            </p>
+            <a href="/doctors" class="inline-flex items-center gap-2 text-accent font-bold group-hover:gap-4 transition-all">
+                Learn more <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+
+        <div class="feature-card glass p-8 rounded-[2rem] border border-primary/5 group">
+            <div class="w-14 h-14 bg-warm/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-warm group-hover:text-white transition-all duration-500">
+                <i data-lucide="pill" class="w-8 h-8"></i>
+            </div>
+            <h4 class="text-2xl font-serif font-bold mb-4">Medication Guide</h4>
+            <p class="text-primary/60 leading-relaxed mb-6">
+                Personalized medication schedules, interaction alerts, and one-tap refills delivered right to your doorstep.
+            </p>
+            <a href="/pharmacies" class="inline-flex items-center gap-2 text-warm font-bold group-hover:gap-4 transition-all">
+                Learn more <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="py-32 px-6 lg:px-12 relative overflow-hidden bg-white">
+    <div class="container mx-auto">
+        <div class="flex flex-col lg:flex-row items-center gap-16">
+            <div class="lg:w-1/3 text-left">
+                <h2 class="text-accent font-mono text-xs uppercase tracking-widest mb-4">Seamless Journey</h2>
+                <h3 class="text-5xl font-serif font-bold text-primary mb-8">How Medico Works</h3>
+                <p class="text-primary/60 text-lg leading-relaxed mb-10">
+                    We've simplified the medical experience. From initial curiosity to final care, every step is designed for clarity and speed.
+                </p>
+                <a href="/register" class="px-8 py-4 bg-primary text-white rounded-full font-bold shadow-lg hover:bg-secondary transition-all inline-block">Join Medico Today</a>
+            </div>
+            
+            <div class="lg:w-2/3 grid md:grid-cols-3 gap-8 relative">
+                <div class="relative z-10 space-y-6">
+                    <div class="w-16 h-16 bg-white shadow-xl rounded-2xl flex items-center justify-center text-2xl font-serif font-bold text-accent border border-accent/20">1</div>
+                    <div class="step-connector hidden md:block"></div>
+                    <h4 class="text-2xl font-serif font-bold">Search</h4>
+                    <p class="text-primary/60">Input your symptoms or the specialist you need in our intuitive search engine.</p>
+                </div>
+                <div class="relative z-10 space-y-6">
+                    <div class="w-16 h-16 bg-white shadow-xl rounded-2xl flex items-center justify-center text-2xl font-serif font-bold text-secondary border border-secondary/20">2</div>
+                    <div class="step-connector hidden md:block"></div>
+                    <h4 class="text-2xl font-serif font-bold">Analyze</h4>
+                    <p class="text-primary/60">Our AI analyzes your data to provide context and suggests the best path forward.</p>
+                </div>
+                <div class="relative z-10 space-y-6">
+                    <div class="w-16 h-16 bg-white shadow-xl rounded-2xl flex items-center justify-center text-2xl font-serif font-bold text-warm border border-warm/20">3</div>
+                    <h4 class="text-2xl font-serif font-bold">Connect</h4>
+                    <p class="text-primary/60">Instantly book an appointment with your chosen specialist via video or in-person.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DOCTOR SEARCH -->
+<section class="py-32 px-6 lg:px-12 bg-bgLight">
+    <div class="container mx-auto">
+        <div class="glass p-12 md:p-20 rounded-[3rem] shadow-2xl relative overflow-hidden border border-white/80">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
+            
+            <div class="max-w-4xl mx-auto relative z-10">
+                <h3 class="text-4xl md:text-5xl font-serif font-bold text-primary mb-12 text-center">Find the Care You Deserve</h3>
+                
+                <form action="/doctors" method="GET" class="grid md:grid-cols-3 gap-4 p-4 bg-white rounded-3xl shadow-xl">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5"></i>
+                        <input type="text" name="specialty" placeholder="Specialty (e.g. Oncology)" class="w-full pl-12 pr-4 py-4 rounded-2xl bg-bgLight border-none focus:ring-2 focus:ring-secondary/20 transition-all font-medium">
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5"></i>
+                        <select class="w-full pl-12 pr-4 py-4 rounded-2xl bg-bgLight border-none focus:ring-2 focus:ring-secondary/20 transition-all font-medium appearance-none">
+                            <option>Current Location</option>
+                            <option>New York, NY</option>
+                            <option>London, UK</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-primary text-white py-4 rounded-2xl font-bold hover:bg-secondary transition-all flex items-center justify-center gap-2 group">
+                        Find Your Doctor <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TRUST SECTION -->
+<section id="trust" class="py-24 px-6 lg:px-12 border-y border-primary/5">
+    <div class="container mx-auto">
+        <h4 class="text-center text-primary/40 font-mono text-xs uppercase tracking-[0.4em] mb-12">Trusted by Leading Institutions</h4>
+        
+        <div class="marquee-container">
+            <div class="marquee-content flex items-center gap-24 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Mayo_Clinic_Logo.svg/1280px-Mayo_Clinic_Logo.svg.png" class="h-12 w-auto" alt="Mayo Clinic">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Johns_Hopkins_University_logo.svg/1280px-Johns_Hopkins_University_logo.svg.png" class="h-12 w-auto" alt="Johns Hopkins">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Cleveland_Clinic_logo.svg/1280px-Cleveland_Clinic_logo.svg.png" class="h-12 w-auto" alt="Cleveland Clinic">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Pfizer_logo.svg/1280px-Pfizer_logo.svg.png" class="h-12 w-auto" alt="Pfizer">
+                <!-- Duplicate for infinite effect -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Mayo_Clinic_Logo.svg/1280px-Mayo_Clinic_Logo.svg.png" class="h-12 w-auto" alt="Mayo Clinic">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Johns_Hopkins_University_logo.svg/1280px-Johns_Hopkins_University_logo.svg.png" class="h-12 w-auto" alt="Johns Hopkins">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NEWSLETTER / APP DOWNLOAD -->
+<section class="py-32 px-6 lg:px-12">
+    <div class="container mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        <div class="space-y-10">
+            <h3 class="text-5xl font-serif font-bold text-primary">Your Health in Your Pocket</h3>
+            <p class="text-primary/60 text-lg leading-relaxed">
+                Download the Medico app for a more personalized experience. Manage prescriptions, track vitals, and chat with your doctor on the go.
+            </p>
+            
+            <div class="flex flex-wrap gap-4">
+                <a href="#" class="bg-primary text-white px-8 py-4 rounded-2xl flex items-center gap-4 hover:bg-secondary transition-all shadow-xl shadow-primary/10">
+                    <i data-lucide="apple" class="w-8 h-8"></i>
+                    <div class="text-left">
+                        <p class="text-[10px] uppercase font-bold opacity-60 leading-none mb-1">Download on</p>
+                        <p class="text-lg font-bold leading-none">App Store</p>
+                    </div>
+                </a>
+                <a href="#" class="bg-primary text-white px-8 py-4 rounded-2xl flex items-center gap-4 hover:bg-secondary transition-all shadow-xl shadow-primary/10">
+                    <i data-lucide="play" class="w-8 h-8 fill-current"></i>
+                    <div class="text-left">
+                        <p class="text-[10px] uppercase font-bold opacity-60 leading-none mb-1">Get it on</p>
+                        <p class="text-lg font-bold leading-none">Google Play</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="relative flex justify-center">
+            <div class="absolute inset-0 bg-secondary/10 rounded-full blur-[100px]"></div>
+            <div class="bg-primary p-12 rounded-[3.5rem] shadow-2xl relative z-10 w-full max-w-md">
+                <h4 class="text-2xl font-serif font-bold text-white mb-6 text-center">Wellness in your inbox</h4>
+                <p class="text-white/60 text-center mb-10">Get curated health tips, medical news, and exclusive updates from our specialists.</p>
+                
+                <form class="space-y-4">
+                    <input type="email" placeholder="Enter your email" class="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:ring-2 focus:ring-accent/50 outline-none transition-all">
+                    <button class="w-full py-4 bg-accent text-primary font-bold rounded-2xl hover:bg-white transition-all shadow-lg shadow-accent/20">Subscribe Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-primary pt-32 pb-12 px-6 lg:px-12 text-white relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-secondary to-warm"></div>
+    <div class="container mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-20">
+        <div class="col-span-2 lg:col-span-2 space-y-8">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                    <i data-lucide="activity" class="text-primary w-6 h-6"></i>
+                </div>
+                <span class="text-2xl font-serif font-bold tracking-tight">Medico</span>
+            </div>
+            <p class="text-white/50 leading-relaxed max-w-sm">
+                Reimagining the future of healthcare through precision, transparency, and human connection.
+            </p>
+        </div>
+        <div class="space-y-6">
+            <h5 class="font-bold text-lg">Company</h5>
+            <ul class="space-y-4 text-white/50 text-sm font-medium">
+                <li><a href="#" class="hover:text-accent transition-colors">About Us</a></li>
+                <li><a href="#" class="hover:text-accent transition-colors">Careers</a></li>
+                <li><a href="#" class="hover:text-accent transition-colors">Contact</a></li>
+            </ul>
+        </div>
+        <div class="space-y-6">
+            <h5 class="font-bold text-lg">Services</h5>
+            <ul class="space-y-4 text-white/50 text-sm font-medium">
+                <li><a href="/predict" class="hover:text-accent transition-colors">Symptom Checker</a></li>
+                <li><a href="/doctors" class="hover:text-accent transition-colors">Find Doctors</a></li>
+                <li><a href="/pharmacies" class="hover:text-accent transition-colors">Pharmacy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-white/30 text-xs font-mono uppercase tracking-widest">
+        <p>© 2026 Medico Global Inc. All rights reserved.</p>
+        <p>Made with care for humanity</p>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Counters Animation
+    const counters = document.querySelectorAll('.counter');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const target = +entry.target.getAttribute('data-target');
+                const speed = 200;
+                const inc = target / speed;
+                let count = 0;
+                const updateCount = () => {
+                    if (count < target) {
+                        count += inc;
+                        entry.target.innerText = Math.ceil(count);
+                        setTimeout(updateCount, 10);
+                    } else {
+                        entry.target.innerText = target;
+                    }
+                };
+                updateCount();
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    counters.forEach(counter => observer.observe(counter));
+
+    // Floating Particles
+    const particlesContainer = document.getElementById('particles-container');
+    if (particlesContainer) {
+        for (let i = 0; i < 20; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'absolute bg-accent/20 rounded-full blur-sm';
+            const size = Math.random() * 20 + 5;
+            dot.style.width = size + 'px';
+            dot.style.height = size + 'px';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.top = Math.random() * 100 + '%';
+            particlesContainer.appendChild(dot);
+            gsap.to(dot, {
+                y: '-=100',
+                x: '+=50',
+                duration: Math.random() * 10 + 10,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+        }
+    }
+</script>
+{% endblock %}
+

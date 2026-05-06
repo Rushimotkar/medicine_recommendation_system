@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Insights | Medico{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pt-16 pb-24">
+    <!-- PAGE HEADER -->
+    <div class="text-center max-w-2xl mx-auto mb-20 space-y-4">
+        <span class="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-[0.2em]">Medical Intelligence</span>
+        <h1 class="text-5xl font-serif font-bold text-primary">Clinical <span class="text-secondary">Insights</span></h1>
+        <p class="text-primary/60 font-medium leading-relaxed">Curated wellness strategies and medical breakthroughs for a sophisticated approach to longevity.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for tip in tips %}
+        <div class="premium-card p-10 group hover:bg-secondary transition-all duration-500 cursor-pointer overflow-hidden relative">
+            <div class="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                <i data-lucide="sparkles" class="w-48 h-48 text-primary group-hover:text-white"></i>
+            </div>
+            
+            <div class="space-y-6 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-white/20 group-hover:text-white transition-colors">
+                    <i data-lucide="book-open-check" class="w-6 h-6"></i>
+                </div>
+                
+                <div class="space-y-3">
+                    <h3 class="text-xl font-serif font-bold text-primary group-hover:text-white transition-colors leading-tight">
+                        {{ tip.title }}
+                    </h3>
+                    <p class="text-sm text-primary/60 font-medium leading-relaxed group-hover:text-white/80 transition-colors">
+                        {{ tip.content }}
+                    </p>
+                </div>
+                
+                <div class="pt-6 border-t border-primary/5 group-hover:border-white/10 flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-primary/30 uppercase tracking-[0.2em] group-hover:text-white/40">
+                        {{ tip.date_added.strftime('%b %d, %Y') }}
+                    </span>
+                    <span class="text-secondary group-hover:text-white text-xs font-bold flex items-center gap-2">
+                        Read Analysis <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full py-24 text-center">
+            <div class="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="newspaper" class="w-10 h-10 text-primary/20"></i>
+            </div>
+            <h4 class="text-xl font-serif font-bold text-primary">Repository Quiet</h4>
+            <p class="text-primary/40 font-medium">New insights are currently being peer-reviewed.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- NEWSLETTER CTA -->
+    <div class="mt-24 p-12 lg:p-20 glass rounded-[4rem] border-white/40 text-center space-y-8 shadow-3xl">
+        <h2 class="text-3xl font-serif font-bold text-primary italic">"The greatest wealth is health."</h2>
+        <p class="text-sm text-primary/40 font-bold uppercase tracking-[0.3em]">Join 10,000+ Wellness Focused Professionals</p>
+        <div class="max-w-md mx-auto flex gap-4">
+            <input type="email" placeholder="professional@email.com" class="flex-1 px-6 py-4 bg-white/50 border border-primary/5 rounded-2xl outline-none focus:ring-2 focus:ring-secondary/20 font-medium">
+            <button class="px-8 py-4 bg-primary text-white font-bold rounded-2xl hover:bg-secondary transition-all shadow-xl shadow-primary/20">Subscribe</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

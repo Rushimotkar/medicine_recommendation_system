@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Portal Login — MediGuide</title>
+    <meta name="description" content="Secure doctor login portal for MediGuide medical consultation system.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00D1FF;
+            --bg-dark: #050505;
+            --secondary: #0A0A0A;
+            --text-light: #FFFFFF;
+            --text-muted: #666666;
+            --accent-red: #FF3B30;
+            --accent-gold: #FFCC00;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(0,209,255,0.08) 0%, transparent 70%);
+            top: -200px; right: -200px;
+            border-radius: 50%;
+            animation: pulse 6s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(245,200,66,0.05) 0%, transparent 70%);
+            bottom: -100px; left: -100px;
+            border-radius: 50%;
+            animation: pulse 8s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.3); } }
+
+        .login-card {
+            border: 1px solid var(--primary);
+            border-top: 4px solid var(--primary);
+            border-radius: 0px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 460px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9), 0 0 40px rgba(0,209,255,0.1);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+        .brand-icon {
+            background: var(--primary);
+            border-radius: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 0 20px rgba(0,209,255,0.4);
+        }
+        .brand-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-light);
+        }
+        .brand-name span { color: var(--primary); }
+
+        .portal-badge {
+            background: linear-gradient(135deg, rgba(245,200,66,0.15), rgba(245,200,66,0.05));
+            border: 1px solid rgba(245,200,66,0.3);
+            border-radius: 50px;
+            padding: 6px 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .form-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            margin-bottom: 1.2rem;
+        }
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0,209,255,0.2);
+            background: rgba(0,209,255,0.02);
+            border-radius: 0px;
+        }
+        .form-input::placeholder { color: var(--text-muted); }
+
+        .btn-login {
+            width: 100%;
+            background: var(--primary);
+            color: #000000;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.05rem;
+            border: none;
+            border-radius: 0px;
+            padding: 14px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(0,209,255,0.4);
+            margin-top: 0.5rem;
+        }
+        .btn-login:hover {
+            box-shadow: 0 0 35px rgba(255,255,255,0.5);
+            background: #FFFFFF;
+            opacity: 0.95;
+        }
+        .btn-login:active { transform: translateY(0); }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 1.8rem 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+        .divider span { color: var(--text-muted); font-size: 0.8rem; }
+
+        .back-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--primary); }
+
+        .flash-error {
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #FF6B6B;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .security-note {
+            background: rgba(0,209,255,0.03);
+            border: 1px solid rgba(0,209,255,0.1);
+            border-radius: 0px;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="text-center">
+            <div class="brand-logo">
+                <div class="brand-icon">👨‍⚕️</div>
+                <span class="brand-name">Medi<span>Guide</span></span>
+            </div>
+            <div class="portal-badge">🔐 Doctor Portal</div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="flash-error">⚠️ {{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('doctor.login') }}" method="POST" id="loginForm">
+            <label class="form-label" for="email">Doctor Email / License ID</label>
+            <input type="email" id="email" name="email" class="form-input" required placeholder="dr.name@medico.com" autocomplete="email">
+
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-input" required placeholder="••••••••" autocomplete="current-password">
+
+            <button type="submit" class="btn-login" id="submitBtn">
+                🏥 Access Consultation Dashboard
+            </button>
+        </form>
+
+        <div class="divider"><span>or</span></div>
+        <a href="/login" class="back-link">← Back to Patient Login</a>
+
+        <div class="security-note">
+            🔒 This portal is restricted to licensed medical professionals.<br>
+            Unauthorized access is prohibited and monitored.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.textContent = '⏳ Verifying credentials...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+        });
+    </script>
+</body>
+</html>

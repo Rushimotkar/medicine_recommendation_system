@@ -1,534 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Finder - Advanced Search | MediGuide</title>
-    <meta name="description" content="Find specialist doctors and clinics near you using MediGuide's AI-powered doctor finder.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+{% extends "base.html" %}
 
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% block title %}Doctor Finder | Medico{% endblock %}
 
-        :root {
-            --teal:    #0ABFA3;
-            --blue:    #0891b2;
-            --dark:    #070E1C;
-            --card:    rgba(11,20,40,0.95);
-            --border:  rgba(10,191,163,0.18);
-            --text:    #C8D8E8;
-            --text-hi: #EEF4FF;
-        }
+{% block extra_css %}
+<style>
+    .doctor-card {
+        background: white;
+        border: 1px solid rgba(11, 37, 69, 0.05);
+        border-radius: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    .doctor-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(11, 37, 69, 0.05);
+        border-color: var(--secondary);
+    }
+    .doctor-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--bg-light);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--secondary);
+        border: 1px solid rgba(27, 108, 168, 0.1);
+    }
+    .map-panel {
+        background: #F8FAFB;
+        border-radius: 2rem;
+        overflow: hidden;
+        border: 1px solid rgba(11, 37, 69, 0.1);
+        height: 700px;
+    }
+    .map-panel iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    .search-pill {
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .search-pill:hover {
+        background: var(--secondary);
+        color: white;
+    }
+</style>
+{% endblock %}
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            min-height: 100vh;
-        }
+{% block content %}
+<div class="relative overflow-hidden bg-bgLight pt-16 pb-24">
+    <!-- Background Decor -->
+    <div class="absolute top-0 right-0 w-1/3 h-full bg-secondary/5 -skew-x-12 translate-x-1/2"></div>
+    
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-[0.2em] mb-4 inline-block">Global Specialist Network</span>
+            <h1 class="text-5xl font-serif font-bold text-primary mb-6">Find the <span class="text-secondary">Right Specialist</span> for Your Needs</h1>
+            <p class="text-primary/60 font-medium text-lg">Connect with verified medical professionals and world-class clinical facilities near you.</p>
+        </div>
 
-        /* ── Nav ── */
-        nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(7,14,28,0.92);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            height: 64px;
-        }
-        .nav-brand {
-            font-family: 'Syne', sans-serif;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--teal);
-            text-decoration: none;
-        }
-        .nav-links { display: flex; gap: 28px; }
-        .nav-links a {
-            color: #5A7090;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .nav-links a:hover { color: var(--teal); }
-        .nav-links a.active { color: var(--text-hi); }
-
-        /* ── Page header ── */
-        .page-header {
-            text-align: center;
-            padding: 60px 20px 40px;
-        }
-        .page-header .badge {
-            display: inline-block;
-            background: rgba(10,191,163,0.12);
-            border: 1px solid rgba(10,191,163,0.3);
-            color: var(--teal);
-            border-radius: 30px;
-            padding: 6px 18px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-        .page-header h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: clamp(28px, 5vw, 44px);
-            font-weight: 800;
-            color: var(--text-hi);
-            line-height: 1.15;
-            margin-bottom: 12px;
-        }
-        .page-header h1 span { color: var(--teal); }
-        .page-header p {
-            font-size: 16px;
-            color: #5A7090;
-            max-width: 520px;
-            margin: 0 auto;
-        }
-
-        /* ── Search card ── */
-        .search-card {
-            max-width: 760px;
-            margin: 0 auto 40px;
-            padding: 0 20px;
-        }
-        .search-form {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 28px 32px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-        .form-row {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-        .form-group {
-            flex: 1;
-            min-width: 180px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--teal);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .form-group input {
-            width: 100%;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: var(--text-hi);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s, background 0.2s;
-        }
-        .form-group input:focus {
-            border-color: rgba(10,191,163,0.5);
-            background: rgba(10,191,163,0.04);
-        }
-        .form-group input::placeholder { color: #3A5070; }
-        .search-btn {
-            width: 100%;
-            margin-top: 18px;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--teal), var(--blue));
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .search-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-        .search-btn:active { transform: translateY(0); }
-        .search-btn.loading { opacity: 0.6; pointer-events: none; }
-
-        /* ── Specialty chips ── */
-        .specialty-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 16px;
-        }
-        .chip {
-            background: rgba(10,191,163,0.08);
-            border: 1px solid rgba(10,191,163,0.2);
-            color: var(--teal);
-            border-radius: 20px;
-            padding: 5px 14px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'DM Sans', sans-serif;
-        }
-        .chip:hover {
-            background: rgba(10,191,163,0.18);
-            border-color: var(--teal);
-        }
-
-        /* ── Alerts ── */
-        .alert {
-            max-width: 760px;
-            margin: 0 auto 24px;
-            padding: 0 20px;
-        }
-        .alert-box {
-            border-radius: 14px;
-            padding: 16px 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-        .alert-error {
-            background: rgba(239,68,68,0.12);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #fca5a5;
-        }
-        .alert-success {
-            background: rgba(10,191,163,0.1);
-            border: 1px solid rgba(10,191,163,0.25);
-            color: var(--teal);
-        }
-
-        /* ── Results layout ── */
-        .results-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px 60px;
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 24px;
-        }
-        @media (max-width: 900px) {
-            .results-section { grid-template-columns: 1fr; }
-        }
-
-        /* ── Results header ── */
-        .results-header {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .results-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-hi);
-        }
-        .results-count {
-            background: rgba(10,191,163,0.12);
-            border: 1px solid rgba(10,191,163,0.25);
-            color: var(--teal);
-            border-radius: 30px;
-            padding: 4px 14px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* ── Doctor list ── */
-        .doctor-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            max-height: 600px;
-            overflow-y: auto;
-            padding-right: 6px;
-        }
-        .doctor-list::-webkit-scrollbar { width: 4px; }
-        .doctor-list::-webkit-scrollbar-track { background: transparent; }
-        .doctor-list::-webkit-scrollbar-thumb { background: rgba(10,191,163,0.3); border-radius: 4px; }
-
-        .doctor-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px 20px;
-            transition: all 0.25s;
-            animation: card-in 0.4s ease-out both;
-        }
-        .doctor-card:hover {
-            border-color: rgba(10,191,163,0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        }
-        @keyframes card-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .doctor-card:nth-child(1)  { animation-delay: 0.05s; }
-        .doctor-card:nth-child(2)  { animation-delay: 0.10s; }
-        .doctor-card:nth-child(3)  { animation-delay: 0.15s; }
-        .doctor-card:nth-child(4)  { animation-delay: 0.20s; }
-        .doctor-card:nth-child(5)  { animation-delay: 0.25s; }
-        .doctor-card:nth-child(n+6){ animation-delay: 0.30s; }
-
-        .doc-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(10,191,163,0.3), rgba(8,145,178,0.3));
-            border: 1px solid rgba(10,191,163,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        .doc-info { flex: 1; min-width: 0; }
-        .doc-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-        .doc-name {
-            font-family: 'Syne', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-hi);
-            line-height: 1.3;
-            word-break: break-word;
-        }
-        .doc-type {
-            display: inline-block;
-            background: rgba(10,191,163,0.1);
-            border: 1px solid rgba(10,191,163,0.2);
-            color: var(--teal);
-            border-radius: 10px;
-            padding: 2px 10px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: capitalize;
-            margin-top: 4px;
-        }
-        .doc-address {
-            font-size: 12px;
-            color: #5A7090;
-            line-height: 1.5;
-            margin-bottom: 12px;
-        }
-        .doc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .doc-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(10,191,163,0.1);
-            border: 1px solid rgba(10,191,163,0.25);
-            color: var(--teal);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .doc-link:hover { background: rgba(10,191,163,0.2); border-color: var(--teal); }
-
-        /* ── Map panel ── */
-        .map-panel {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            min-height: 400px;
-            position: sticky;
-            top: 84px;
-            max-height: 600px;
-        }
-        .map-panel iframe,
-        .map-panel > * { width: 100%; height: 100%; min-height: 400px; border: none; }
-        .map-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 300px;
-            gap: 12px;
-            color: #3A5070;
-            font-size: 14px;
-        }
-        .map-placeholder .map-icon { font-size: 48px; }
-
-        /* ── Empty state ── */
-        .empty-state {
-            max-width: 500px;
-            margin: 20px auto 60px;
-            text-align: center;
-            padding: 0 20px;
-        }
-        .empty-icon { font-size: 56px; margin-bottom: 16px; }
-        .empty-state h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 22px;
-            color: var(--text-hi);
-            margin-bottom: 10px;
-        }
-        .empty-state p { font-size: 14px; color: #5A7090; }
-
-        /* ── Spinner ── */
-        #search-spinner { display: none; }
-        #search-spinner.visible { display: block; }
-    </style>
-</head>
-<body>
-
-<!-- Navigation -->
-<nav>
-    <a href="/" class="nav-brand">🩺 MediGuide</a>
-    <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/predict">Symptom Check</a>
-        <a href="/doctors" class="active">Find Doctors</a>
-    </div>
-</nav>
-
-<!-- Page Header -->
-<div class="page-header">
-    <div class="badge">🗺️ Doctor Finder</div>
-    <h1>Find <span>Specialists</span> Near You</h1>
-    <p>Search for doctors, clinics and hospitals in your area using our real-time location database.</p>
-</div>
-
-<!-- Search Form -->
-<div class="search-card">
-    <div class="search-form">
-        <form method="POST" id="doctor-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="specialty-input">Specialty</label>
-                    <input type="text" id="specialty-input" name="specialty"
-                           placeholder="e.g. Cardiologist, Dermatologist"
-                           value="{{ specialty or '' }}" required autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="location-input">Location</label>
-                    <input type="text" id="location-input" name="location"
-                           placeholder="e.g. Mumbai, Aurangabad"
-                           value="{{ location or '' }}" required autocomplete="off">
-                </div>
+        <!-- SEARCH BOX -->
+        <div class="max-w-4xl mx-auto mb-20">
+            <div class="glass p-4 rounded-[2.5rem] shadow-3xl border-white/40">
+                <form method="POST" id="doctor-form" class="grid md:grid-cols-12 gap-4">
+                    <div class="md:col-span-5 relative">
+                        <i data-lucide="stethoscope" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30"></i>
+                        <input type="text" id="specialty-input" name="specialty" placeholder="Medical Specialty" value="{{ specialty or '' }}" required class="w-full pl-14 pr-6 py-4 bg-white/50 border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium">
+                    </div>
+                    <div class="md:col-span-5 relative">
+                        <i data-lucide="map-pin" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30"></i>
+                        <input type="text" id="location-input" name="location" placeholder="City or Location" value="{{ location or '' }}" required class="w-full pl-14 pr-6 py-4 bg-white/50 border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium">
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" id="search-btn" class="w-full h-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-secondary transition-all shadow-lg shadow-primary/10 flex items-center justify-center">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <!-- Quick specialty chips -->
-            <div class="specialty-chips">
-                <button type="button" class="chip" onclick="setSpecialty('General Physician')">🩺 General</button>
-                <button type="button" class="chip" onclick="setSpecialty('Cardiologist')">❤️ Cardiologist</button>
-                <button type="button" class="chip" onclick="setSpecialty('Dermatologist')">🩹 Dermatologist</button>
-                <button type="button" class="chip" onclick="setSpecialty('Neurologist')">🧠 Neurologist</button>
-                <button type="button" class="chip" onclick="setSpecialty('Orthopedic')">🦴 Orthopedic</button>
-                <button type="button" class="chip" onclick="setSpecialty('Pediatrician')">👶 Pediatrician</button>
-                <button type="button" class="chip" onclick="setSpecialty('ENT')">👂 ENT</button>
-                <button type="button" class="chip" onclick="setSpecialty('Gynecologist')">🌸 Gynecologist</button>
-            </div>
-
-            <button type="submit" class="search-btn" id="search-btn">
-                🔍 Search Doctors
-            </button>
-        </form>
-    </div>
-</div>
-
-<!-- Error Alert -->
-{% if error %}
-<div class="alert">
-    <div class="alert-box alert-error">
-        <span>⚠️</span>
-        <span>{{ error }}</span>
-    </div>
-</div>
-{% endif %}
-
-<!-- Success Alert -->
-{% if success and count %}
-<div class="alert">
-    <div class="alert-box alert-success">
-        <span>✅</span>
-        <span>Found <strong>{{ count }}</strong> result{{ 's' if count != 1 else '' }} for
-        <strong>{{ specialty }}</strong> in <strong>{{ location }}</strong></span>
-    </div>
-</div>
-{% endif %}
-
-<!-- Results Section -->
-{% if doctors %}
-<div class="results-section">
-    <div class="results-header">
-        <div class="results-title">Nearby Facilities</div>
-        <span class="results-count">{{ doctors | length }} found</span>
-    </div>
-
-    <!-- Doctor Cards -->
-    <div class="doctor-list">
-        {% for doc in doctors %}
-        <div class="doctor-card">
-            <div class="doc-header">
-                <div class="doc-avatar">🏥</div>
-                <div class="doc-info">
-                    <div class="doc-name">{{ doc.name }}</div>
-                    <span class="doc-type">{{ doc.type or 'Facility' }}</span>
-                </div>
-            </div>
-            <div class="doc-address">📍 {{ doc.full_address }}</div>
-            <div class="doc-actions">
-                <a href="https://www.google.com/maps?q={{ doc.latitude }},{{ doc.longitude }}"
-                   target="_blank" class="doc-link">
-                    🗺️ Google Maps
-                </a>
-                <a href="https://www.google.com/maps/dir/?api=1&destination={{ doc.latitude }},{{ doc.longitude }}"
-                   target="_blank" class="doc-link">
-                    🧭 Directions
-                </a>
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+                <span class="text-[10px] font-mono text-primary/30 uppercase tracking-widest font-bold pt-2">Popular:</span>
+                <button onclick="setSpecialty('Cardiologist')" class="search-pill px-4 py-1.5 bg-white border border-primary/5 rounded-full text-[10px] font-bold text-primary/60 hover:shadow-md transition-all">Cardiologist</button>
+                <button onclick="setSpecialty('Dermatologist')" class="search-pill px-4 py-1.5 bg-white border border-primary/5 rounded-full text-[10px] font-bold text-primary/60 hover:shadow-md transition-all">Dermatologist</button>
+                <button onclick="setSpecialty('Neurologist')" class="search-pill px-4 py-1.5 bg-white border border-primary/5 rounded-full text-[10px] font-bold text-primary/60 hover:shadow-md transition-all">Neurologist</button>
+                <button onclick="setSpecialty('Pediatrician')" class="search-pill px-4 py-1.5 bg-white border border-primary/5 rounded-full text-[10px] font-bold text-primary/60 hover:shadow-md transition-all">Pediatrician</button>
             </div>
         </div>
-        {% endfor %}
     </div>
+</div>
 
-    <!-- Map -->
-    <div class="map-panel">
-        {% if map_html %}
-            {{ map_html | safe }}
-        {% else %}
-            <div class="map-placeholder">
-                <div class="map-icon">🗺️</div>
-                <div>Map unavailable for this search</div>
+<div class="container mx-auto px-6 -mt-12 relative z-20">
+    {% if doctors or internal_doctors %}
+    <div class="grid lg:grid-cols-12 gap-10">
+        <!-- DOCTOR LIST -->
+        <div class="lg:col-span-5 space-y-8">
+            {% if internal_doctors %}
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-serif font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="shield-check" class="text-secondary w-5 h-5"></i> Verified Specialists
+                    </h3>
+                </div>
+                <div class="space-y-4">
+                    {% for doc in internal_doctors %}
+                    <div class="doctor-card p-6">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="doctor-avatar">
+                                {{ doc.name[3] if doc.name.startswith('Dr.') else doc.name[0] }}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <span class="px-2 py-0.5 bg-accent/10 text-accent text-[9px] font-bold rounded uppercase tracking-wider mb-1 inline-block border border-accent/20">Medico Partner</span>
+                                    <div class="flex items-center gap-1 text-warm">
+                                        <i data-lucide="star" class="w-3 h-3 fill-warm"></i>
+                                        <span class="text-xs font-bold">4.9</span>
+                                    </div>
+                                </div>
+                                <h5 class="text-lg font-bold text-primary">{{ doc.name }}</h5>
+                                <p class="text-secondary text-sm font-bold">{{ doc.specialization }}</p>
+                                <p class="text-primary/40 text-xs font-medium flex items-center gap-1 mt-1">
+                                    <i data-lucide="hospital" class="w-3 h-3"></i> {{ doc.hospital }}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('book_appointment', doctor_id=doc.id) }}" class="w-full py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-secondary transition-all inline-block text-center shadow-lg shadow-primary/10">
+                            Book Virtual Consultation
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="py-4"><div class="w-full border-t border-primary/5"></div></div>
+            {% endif %}
+
+            {% if doctors %}
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-serif font-bold text-primary">Regional Facilities</h3>
+                    <span class="text-xs font-bold text-primary/30 uppercase tracking-widest">{{ doctors | length }} results</span>
+                </div>
+                <div class="space-y-4 max-h-[600px] overflow-y-auto pr-4 no-scrollbar">
+                    {% for doc in doctors %}
+                    <div class="p-5 bg-white rounded-2xl border border-primary/5 hover:border-secondary/30 transition-all group">
+                        <div class="flex justify-between items-start mb-2">
+                            <h6 class="font-bold text-primary">{{ doc.name }}</h6>
+                            <span class="px-2 py-0.5 bg-bgLight text-primary/40 text-[9px] font-bold rounded">{{ doc.type }}</span>
+                        </div>
+                        <p class="text-[11px] text-primary/40 font-medium mb-4 flex items-center gap-1">
+                            <i data-lucide="map-pin" class="w-3 h-3"></i> {{ doc.full_address }}
+                        </p>
+                        <div class="flex gap-2">
+                            <a href="https://www.google.com/maps?q={{ doc.latitude }},{{ doc.longitude }}" target="_blank" class="flex-1 py-2 bg-bgLight text-primary/60 text-[10px] font-bold rounded-lg hover:bg-secondary/10 hover:text-secondary transition-all text-center">View Map</a>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ doc.latitude }},{{ doc.longitude }}" target="_blank" class="flex-1 py-2 bg-secondary text-white text-[10px] font-bold rounded-lg hover:bg-primary transition-all text-center">Directions</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- MAP PANEL -->
+        <div class="lg:col-span-7">
+            <div class="map-panel sticky top-24 shadow-3xl shadow-primary/5">
+                {% if map_html %}
+                    {{ map_html | safe }}
+                {% else %}
+                    <div class="w-full h-full flex flex-col items-center justify-center p-20 text-center">
+                        <div class="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center text-primary/20 mb-6">
+                            <i data-lucide="map" class="w-10 h-10"></i>
+                        </div>
+                        <h4 class="text-xl font-serif font-bold text-primary/40 mb-2">Facility Mapping View</h4>
+                        <p class="text-sm text-primary/30 font-medium">Search for a specialist to activate the interactive clinical map.</p>
+                    </div>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
     </div>
+    {% elif not error %}
+    <div class="py-32 text-center max-w-xl mx-auto">
+        <div class="w-32 h-32 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-8 text-primary/20">
+            <i data-lucide="search-check" class="w-16 h-16"></i>
+        </div>
+        <h2 class="text-3xl font-serif font-bold text-primary mb-4">Start Your Medical Search</h2>
+        <p class="text-primary/60 font-medium">Enter a medical specialty and your preferred city above to discover the most qualified clinical experts in your region.</p>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
 
-{% elif not error %}
-<!-- Empty state shown on first load -->
-<div class="empty-state">
-    <div class="empty-icon">🏥</div>
-    <h2>Search for a Doctor</h2>
-    <p>Enter a medical specialty and your city above to find nearby doctors, clinics and hospitals.</p>
-</div>
-{% endif %}
-
+{% block extra_js %}
 <script>
 function setSpecialty(name) {
     document.getElementById('specialty-input').value = name;
@@ -537,10 +199,9 @@ function setSpecialty(name) {
 
 document.getElementById('doctor-form').addEventListener('submit', function() {
     const btn = document.getElementById('search-btn');
-    btn.textContent = '⏳ Searching…';
-    btn.classList.add('loading');
+    btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+    btn.classList.add('opacity-50', 'pointer-events-none');
+    lucide.createIcons();
 });
 </script>
-
-</body>
-</html>
+{% endblock %}

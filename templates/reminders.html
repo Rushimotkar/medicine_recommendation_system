@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Medication Schedule | Medico{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pt-16 pb-24">
+    <!-- PAGE HEADER -->
+    <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <span class="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-[0.2em]">Therapeutic Adherence</span>
+        <h1 class="text-5xl font-serif font-bold text-primary">Medication <span class="text-secondary">Reminders</span></h1>
+        <p class="text-primary/60 font-medium leading-relaxed">Optimize your treatment outcomes with precise temporal coordination of your pharmaceutical regimen.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-12 items-start">
+        <!-- ADD REMINDER FORM -->
+        <div class="lg:col-span-4">
+            <div class="premium-card p-8 lg:p-10 sticky top-24">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-primary">New Protocol</h3>
+                </div>
+
+                <form method="POST" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Pharmaceutical Name</label>
+                        <input type="text" name="medicine_name" required placeholder="e.g. Atorvastatin" class="w-full px-5 py-3.5 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all text-sm">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Dosage Specification</label>
+                        <input type="text" name="dosage" placeholder="e.g. 10mg Tablet" class="w-full px-5 py-3.5 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all text-sm">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Administration Time</label>
+                        <input type="time" name="time" required class="w-full px-5 py-3.5 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all text-sm cursor-pointer">
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3">
+                        Register Reminder
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- REMINDERS LIST -->
+        <div class="lg:col-span-8">
+            <div class="premium-card overflow-hidden">
+                <div class="p-8 border-b border-primary/5 flex justify-between items-center bg-white/50">
+                    <h3 class="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4 text-secondary"></i> Active Schedule
+                    </h3>
+                    <span class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">{{ reminders|length }} Protocols Active</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-bgLight text-[10px] font-mono text-primary/40 uppercase tracking-[0.2em]">
+                                <th class="px-8 py-4">Clinical Agent</th>
+                                <th class="px-8 py-4">Dosage</th>
+                                <th class="px-8 py-4">Scheduled Time</th>
+                                <th class="px-8 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary/5">
+                            {% for reminder in reminders %}
+                            <tr class="group hover:bg-secondary/[0.02] transition-colors">
+                                <td class="px-8 py-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                            <i data-lucide="pill" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="font-bold text-primary">{{ reminder.medicine_name }}</p>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6 text-sm font-medium text-primary/60">{{ reminder.dosage }}</td>
+                                <td class="px-8 py-6">
+                                    <span class="px-4 py-1.5 bg-secondary/5 text-secondary text-xs font-bold rounded-full border border-secondary/10">
+                                        {{ reminder.time }}
+                                    </span>
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    <a href="{{ url_for('delete_reminder', reminder_id=reminder.id) }}" class="p-2 text-primary/20 hover:text-red-500 transition-colors inline-block">
+                                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-8 py-24 text-center">
+                                    <div class="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <i data-lucide="alarm-clock-off" class="w-8 h-8 text-primary/10"></i>
+                                    </div>
+                                    <h4 class="text-lg font-serif font-bold text-primary">No Scheduled Regimens</h4>
+                                    <p class="text-xs text-primary/30 font-medium">Your current therapeutic schedule is empty.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-8 p-6 bg-secondary/5 rounded-3xl border border-secondary/10 flex items-start gap-4">
+                <i data-lucide="shield-check" class="w-5 h-5 text-secondary shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="text-xs font-bold text-primary/80 uppercase tracking-widest mb-1">Pharmacist Note</p>
+                    <p class="text-[11px] text-primary/40 font-medium leading-relaxed italic">
+                        Maintaining strict adherence to the prescribed timing of your medications is critical for optimal therapeutic efficacy and metabolic stability.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

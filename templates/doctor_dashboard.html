@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Doctor Dashboard | Medico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doctor-stat-card {
+        background: white;
+        border: 1px solid rgba(11, 37, 69, 0.05);
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .doctor-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(11, 37, 69, 0.05);
+    }
+    .tab-btn {
+        transition: all 0.3s;
+        border-bottom: 2px solid transparent;
+    }
+    .tab-btn.active {
+        color: var(--secondary);
+        border-bottom-color: var(--secondary);
+    }
+    .queue-row {
+        transition: all 0.2s;
+    }
+    .queue-row:hover {
+        background: rgba(27, 108, 168, 0.02);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pb-20">
+    <!-- DOCTOR HEADER -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
+        <div class="flex items-center gap-6">
+            <div class="w-20 h-20 rounded-3xl bg-secondary/10 flex items-center justify-center border border-secondary/20">
+                <i data-lucide="stethoscope" class="w-10 h-10 text-secondary"></i>
+            </div>
+            <div class="space-y-1">
+                <h1 class="text-3xl font-serif font-bold text-primary">Dr. {{ doctor.name }}</h1>
+                <p class="text-primary/60 font-medium flex items-center gap-2">
+                    <span class="px-2 py-0.5 bg-accent/10 text-accent text-[10px] font-bold rounded uppercase tracking-wider">{{ doctor.specialization }}</span>
+                    <span>•</span>
+                    <span>{{ doctor.hospital }}</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 w-full lg:w-auto">
+            <div class="grid grid-cols-3 gap-3 flex-1 lg:flex-none">
+                <div class="doctor-stat-card p-4 min-w-[100px] text-center">
+                    <p class="text-[10px] font-mono text-primary/30 uppercase tracking-widest mb-1">Today</p>
+                    <p class="text-2xl font-serif font-bold text-primary">{{ counts.total }}</p>
+                </div>
+                <div class="doctor-stat-card p-4 min-w-[100px] text-center">
+                    <p class="text-[10px] font-mono text-primary/30 uppercase tracking-widest mb-1 text-warm">Waiting</p>
+                    <p class="text-2xl font-serif font-bold text-warm">{{ counts.waiting }}</p>
+                </div>
+                <div class="doctor-stat-card p-4 min-w-[100px] text-center border-accent/20">
+                    <p class="text-[10px] font-mono text-primary/30 uppercase tracking-widest mb-1 text-accent">Done</p>
+                    <p class="text-2xl font-serif font-bold text-accent">{{ counts.completed }}</p>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <button onclick="toggleNotifications()" class="w-14 h-14 rounded-2xl glass border border-primary/5 flex items-center justify-center hover:bg-primary/5 transition-all relative">
+                    <i data-lucide="bell" class="w-6 h-6 text-primary"></i>
+                    {% if unread_count > 0 %}
+                    <span class="absolute top-2 right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                        {{ unread_count }}
+                    </span>
+                    {% endif %}
+                </button>
+                
+                <div id="notif-dropdown" class="hidden absolute right-0 top-full mt-4 w-80 glass rounded-3xl shadow-3xl border border-white/40 z-50 overflow-hidden">
+                    <div class="p-5 border-b border-primary/5 flex justify-between items-center bg-white/50">
+                        <h4 class="font-bold text-primary">Clinical Alerts</h4>
+                        <button onclick="markAllAsRead(event)" class="text-[10px] font-bold text-secondary hover:underline uppercase tracking-wider">Clear all</button>
+                    </div>
+                    <div class="max-h-[400px] overflow-y-auto">
+                        {% for n in notifications %}
+                        <div class="p-4 border-b border-primary/5 {{ 'bg-secondary/5' if not n.is_read else '' }}">
+                            <p class="text-sm text-primary font-medium leading-snug mb-1">{{ n.message }}</p>
+                            <span class="text-[10px] text-primary/40 font-mono">{{ n.created_at.strftime('%H:%M • %b %d') }}</span>
+                        </div>
+                        {% else %}
+                        <div class="p-10 text-center text-primary/40">
+                            <i data-lucide="check-circle-2" class="w-8 h-8 mx-auto mb-2 opacity-20"></i>
+                            <p class="text-sm">No pending alerts</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS NAVIGATION -->
+    <div class="flex items-center gap-8 border-b border-primary/5 mb-10 overflow-x-auto no-scrollbar">
+        <button onclick="switchTab('queue')" class="tab-btn active px-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap" id="tab-queue">
+            <i data-lucide="list-ordered" class="w-4 h-4"></i> Active Queue
+        </button>
+        <button onclick="switchTab('pending')" class="tab-btn px-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap" id="tab-pending">
+            <i data-lucide="clock-4" class="w-4 h-4"></i> Pending
+        </button>
+        <button onclick="switchTab('emergency')" class="tab-btn px-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap text-red-500" id="tab-emergency">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Emergency
+        </button>
+        <button onclick="switchTab('history')" class="tab-btn px-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap" id="tab-history">
+            <i data-lucide="history" class="w-4 h-4"></i> Past Cases
+        </button>
+    </div>
+
+    <!-- TABS CONTENT -->
+    <div id="queue-panel" class="tab-panel">
+        <div class="premium-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-bgLight text-[10px] font-mono text-primary/40 uppercase tracking-[0.2em]">
+                            <th class="px-8 py-5">Slot</th>
+                            <th class="px-8 py-5">Patient Details</th>
+                            <th class="px-8 py-5">Primary Complaint</th>
+                            <th class="px-8 py-5">Urgency</th>
+                            <th class="px-8 py-5 text-right">Clinical Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-primary/5">
+                        {% for c in today_queue %}
+                        <tr class="queue-row group">
+                            <td class="px-8 py-6 font-mono text-secondary font-bold">#{{ c.slot_number }}</td>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                                        {{ c.patient_name[:1] }}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-primary">{{ c.patient_name }}</p>
+                                        <p class="text-[10px] text-primary/40 font-medium uppercase tracking-wider">{{ c.patient_age }}y • {{ c.patient_gender }} • {{ c.appointment_time }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 max-w-xs">
+                                <p class="text-sm text-primary/70 line-clamp-2 leading-relaxed italic">"{{ c.chief_complaint }}"</p>
+                            </td>
+                            <td class="px-8 py-6">
+                                {% if c.priority == 'Urgent' %}
+                                <span class="status-pill bg-red-100 text-red-500">Urgent</span>
+                                {% elif c.priority == 'High' %}
+                                <span class="status-pill bg-warm/10 text-warm">High</span>
+                                {% else %}
+                                <span class="status-pill bg-bgLight text-primary/40">Routine</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                {% if c.status == 'Requested' %}
+                                <div class="flex justify-end gap-2">
+                                    <form action="{{ url_for('doctor.accept_appointment', apt_id=c.id) }}" method="POST">
+                                        <button class="px-4 py-2 bg-accent text-primary font-bold rounded-xl text-xs hover:bg-secondary hover:text-white transition-all shadow-lg shadow-accent/10">Accept</button>
+                                    </form>
+                                    <button onclick="showRescheduleModal('{{ c.id }}')" class="px-4 py-2 bg-warm/10 text-warm font-bold rounded-xl text-xs hover:bg-warm hover:text-white transition-all">Reschedule</button>
+                                </div>
+                                {% else %}
+                                <a href="{{ url_for('doctor.patient_detail', consult_id=c.id) }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-secondary transition-all shadow-xl shadow-primary/20">
+                                    Consult Now <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-20 text-center">
+                                <div class="opacity-20 mb-4">
+                                    <i data-lucide="clipboard-list" class="w-16 h-16 mx-auto"></i>
+                                </div>
+                                <h4 class="text-xl font-serif font-bold text-primary">All Quiet Today</h4>
+                                <p class="text-primary/40 font-medium">No active consultations in your queue.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTHER PANELS (Simplified for brevity, similar structure) -->
+    <div id="pending-panel" class="tab-panel hidden">
+        <div class="premium-card p-12 text-center opacity-40">
+            <i data-lucide="clock" class="w-12 h-12 mx-auto mb-4"></i>
+            <p class="font-bold">Pending Actions Feature coming soon...</p>
+        </div>
+    </div>
+
+    <div id="emergency-panel" class="tab-panel hidden">
+        <div class="premium-card bg-red-50/50 border-red-100 overflow-hidden">
+            <div class="p-8 border-b border-red-100 flex items-center justify-between">
+                <h3 class="text-xl font-serif font-bold text-red-600 flex items-center gap-2">
+                    <i data-lucide="flame" class="w-5 h-5"></i> Critical Admissions
+                </h3>
+                <span class="px-3 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">LIVE TRIAGE</span>
+            </div>
+            {% if emergency %}
+                <!-- Table similar to queue but with red accents -->
+            {% else %}
+            <div class="p-20 text-center">
+                <p class="text-red-400 font-medium">No active emergency cases reported.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="history-panel" class="tab-panel hidden">
+        <div class="premium-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-bgLight text-[10px] font-mono text-primary/40 uppercase tracking-[0.2em]">
+                            <th class="px-8 py-4">Date</th>
+                            <th class="px-8 py-4">Patient</th>
+                            <th class="px-8 py-4">Clinical Diagnosis</th>
+                            <th class="px-8 py-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-primary/5">
+                        {% for h in history %}
+                        <tr class="hover:bg-bgLight transition-colors">
+                            <td class="px-8 py-5 text-primary/40 font-mono">{{ h.consultation_date }}</td>
+                            <td class="px-8 py-5 font-bold text-primary">{{ h.patient_name }}</td>
+                            <td class="px-8 py-5 text-primary/70">{{ h.diagnosis }}</td>
+                            <td class="px-8 py-5">
+                                <span class="status-pill bg-accent/10 text-accent">Completed</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RESCHEDULE MODAL -->
+<div id="rescheduleModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-primary/40 backdrop-blur-md" onclick="closeRescheduleModal()"></div>
+    <div class="glass max-w-lg w-full rounded-[2.5rem] p-10 relative z-10 shadow-3xl border-white/40">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-warm/10 flex items-center justify-center text-warm">
+                <i data-lucide="calendar-clock" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-serif font-bold text-primary">Reschedule Request</h3>
+        </div>
+        <form id="rescheduleForm" method="POST" class="space-y-6">
+            <div>
+                <label class="text-xs font-bold text-primary/40 uppercase tracking-widest block mb-2">Message to Patient</label>
+                <textarea name="message" placeholder="Explain the reason for rescheduling..." class="w-full px-4 py-4 rounded-2xl bg-bgLight border border-primary/5 outline-none font-medium min-h-[150px] resize-none"></textarea>
+            </div>
+            <div class="flex gap-4">
+                <button type="button" onclick="closeRescheduleModal()" class="flex-1 py-4 bg-primary/5 text-primary font-bold rounded-2xl hover:bg-primary/10 transition-all">Cancel</button>
+                <button type="submit" class="flex-1 py-4 bg-warm text-white font-bold rounded-2xl hover:bg-primary transition-all shadow-lg shadow-warm/10">Send Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchTab(tabId) {
+        // Update Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById('tab-' + tabId).classList.add('active');
+
+        // Update Panels
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.add('hidden');
+        });
+        document.getElementById(tabId + '-panel').classList.remove('hidden');
+    }
+
+    function toggleNotifications() {
+        const dropdown = document.getElementById('notif-dropdown');
+        dropdown.classList.toggle('hidden');
+    }
+
+    function showRescheduleModal(aptId) {
+        const modal = document.getElementById('rescheduleModal');
+        const form = document.getElementById('rescheduleForm');
+        form.action = '/doctor/appointment/' + aptId + '/reschedule';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeRescheduleModal() {
+        const modal = document.getElementById('rescheduleModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function markAllAsRead(event) {
+        event.stopPropagation();
+        fetch("{{ url_for('doctor.mark_notifications_read') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+
+    // Close notifications when clicking outside
+    window.addEventListener('click', function(event) {
+        const notifDropdown = document.getElementById('notif-dropdown');
+        const notifBtn = document.querySelector('button[onclick="toggleNotifications()"]');
+        if (notifDropdown && !notifDropdown.contains(event.target) && !notifBtn.contains(event.target)) {
+            notifDropdown.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}
+

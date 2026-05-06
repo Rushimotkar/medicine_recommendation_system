@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Medico{% endblock %} | Precision Health</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2545',
+                        secondary: '#1B6CA8',
+                        accent: '#4CC9A4',
+                        warm: '#F4A261',
+                        bgLight: '#F8FAFB',
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"DM Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --primary: #0B2545;
+            --secondary: #1B6CA8;
+            --accent: #4CC9A4;
+            --warm: #F4A261;
+            --bg-light: #F8FAFB;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--primary);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .premium-card {
+            background: white;
+            border: 1px solid rgba(11, 37, 69, 0.05);
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .premium-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(11, 37, 69, 0.05);
+        }
+
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            z-index: 1000;
+            width: 0%;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-light); }
+        ::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .emergency-btn {
+            position: relative;
+        }
+
+        .emergency-btn::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 2px solid #ef4444;
+            border-radius: 9999px;
+            animation: pulse-ring 2s infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .emergency-btn:hover::before {
+            opacity: 1;
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body class="antialiased">
+    <div id="scroll-progress"></div>
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 py-6 px-6 lg:px-12 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="/" class="flex items-center gap-2 group">
+                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                    <i data-lucide="activity" class="text-accent w-6 h-6"></i>
+                </div>
+                <span class="text-2xl font-serif font-bold tracking-tight">Medico</span>
+            </a>
+        </div>
+        
+        <div class="hidden lg:flex items-center gap-8 font-medium text-sm tracking-wide">
+            <a href="/predict" class="nav-link hover:text-secondary">Symptom Checker</a>
+            <a href="/doctors" class="nav-link hover:text-secondary">Find Doctors</a>
+            <a href="/pharmacies" class="nav-link hover:text-secondary">Pharmacy</a>
+            <a href="/interactions" class="nav-link hover:text-secondary">Interactions</a>
+            <div class="h-4 w-[1px] bg-primary/10"></div>
+            <a href="javascript:void(0)" onclick="toggleEmergencyModal()" class="text-red-500 font-bold flex items-center gap-2 hover:scale-105 transition-transform">
+                <i data-lucide="phone-forwarded" class="w-4 h-4"></i> Emergency
+            </a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div id="google_translate_element" class="hidden md:block"></div>
+            
+            {% if current_user and current_user.is_authenticated %}
+                <div class="relative group">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/5 hover:border-primary/20 transition-all">
+                        <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <i data-lucide="user" class="w-4 h-4 text-secondary"></i>
+                        </div>
+                        <span class="text-sm font-bold">{{ current_user.name if current_user.name else 'Account' }}</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 opacity-50"></i>
+                    </button>
+                    <div class="absolute right-0 top-full mt-2 w-56 glass rounded-2xl p-2 shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all z-[60]">
+                        <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5 transition-colors text-sm font-medium">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                        </a>
+                        <a href="/reminders" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5 transition-colors text-sm font-medium">
+                            <i data-lucide="bell" class="w-4 h-4"></i> Reminders
+                        </a>
+                        {% if current_user.email == 'admin@medico.com' %}
+                        <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-warm/10 text-warm transition-colors text-sm font-bold">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Admin Panel
+                        </a>
+                        {% endif %}
+                        <div class="my-2 border-t border-primary/5"></div>
+                        <a href="/logout" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-500 transition-colors text-sm font-bold">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="/login" class="hidden sm:block text-sm font-bold hover:text-secondary transition-colors">Sign In</a>
+                <a href="/register" class="px-6 py-2.5 rounded-full bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-secondary hover:-translate-y-0.5 transition-all">Get Started</a>
+            {% endif %}
+            
+            <button class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-primary/5">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="min-h-screen pt-24">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- EMERGENCY MODAL -->
+    <div id="emergencyModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-primary/40 backdrop-blur-md" onclick="toggleEmergencyModal()"></div>
+        <div class="glass max-w-lg w-full rounded-[2.5rem] p-8 md:p-12 relative z-10 shadow-3xl border-white/40">
+            <button onclick="toggleEmergencyModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/5 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <div class="text-center space-y-4 mb-10">
+                <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="alert-circle" class="text-red-500 w-10 h-10"></i>
+                </div>
+                <h3 class="text-3xl font-serif font-bold text-primary">Emergency Contacts</h3>
+                <p class="text-primary/60">Immediate medical assistance is just a tap away.</p>
+            </div>
+
+            <div class="space-y-4">
+                <a href="tel:108" class="flex items-center justify-between p-6 bg-red-500 text-white rounded-3xl hover:bg-red-600 transition-all shadow-xl shadow-red-500/20 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                            <i data-lucide="ambulance" class="w-6 h-6"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="font-bold text-xl">Call Ambulance</p>
+                            <p class="text-xs text-white/80 uppercase font-mono tracking-widest">National Hotline</p>
+                        </div>
+                    </div>
+                    <span class="text-2xl font-bold font-serif italic">108</span>
+                </a>
+
+                {% if global_emergency_contacts %}
+                    <div class="relative py-4">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-primary/5"></div></div>
+                        <div class="relative flex justify-center text-xs uppercase font-mono tracking-widest text-primary/30 px-2 bg-transparent">Your Contacts</div>
+                    </div>
+                    {% for c in global_emergency_contacts %}
+                    <a href="tel:{{ c.phone }}" class="flex items-center justify-between p-5 glass border-primary/5 rounded-2xl hover:border-primary/20 transition-all group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-primary/5 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                <i data-lucide="user" class="w-5 h-5"></i>
+                            </div>
+                            <span class="font-bold text-primary">{{ c.name }}</span>
+                        </div>
+                        <span class="font-mono text-secondary font-bold">{{ c.phone }}</span>
+                    </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- JS SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+      }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <script>
+        lucide.createIcons();
+
+        function toggleEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("scroll-progress").style.width = scrolled + "%";
+            
+            const nav = document.getElementById('navbar');
+            if (winScroll > 50) {
+                nav.classList.add('glass', 'py-4', 'shadow-xl');
+                nav.classList.remove('py-6');
+            } else {
+                nav.classList.remove('glass', 'py-4', 'shadow-xl');
+                nav.classList.add('py-6');
+            }
+        };
+
+        {% if current_user and current_user.is_authenticated %}
+        function checkReminders() {
+            fetch('/api/reminders')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.reminders) {
+                        const now = new Date();
+                        const currentHours = String(now.getHours()).padStart(2, '0');
+                        const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+                        const currentTimeStr = currentHours + ":" + currentMinutes;
+                        
+                        data.reminders.forEach(reminder => {
+                            if(reminder.time === currentTimeStr) {
+                                const remindedKey = 'reminded_' + reminder.medicine_name + '_' + currentTimeStr + '_' + now.toDateString();
+                                if(!localStorage.getItem(remindedKey)) {
+                                    if ("Notification" in window && Notification.permission === "granted") {
+                                        new Notification("Medication Reminder!", {
+                                            body: "It's time to take: " + reminder.medicine_name,
+                                            icon: '/static/img/logo.png'
+                                        });
+                                    }
+                                    // Custom visual toast could be added here
+                                    if ('speechSynthesis' in window) {
+                                        const msg = new SpeechSynthesisUtterance("Reminder! It is time to take your " + reminder.medicine_name);
+                                        window.speechSynthesis.speak(msg);
+                                    }
+                                    localStorage.setItem(remindedKey, "true");
+                                }
+                            }
+                        });
+                    }
+                });
+        }
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+        setInterval(checkReminders, 60000);
+        checkReminders();
+        {% endif %}
+
+        // GSAP Global Animations
+        gsap.registerPlugin(ScrollTrigger);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

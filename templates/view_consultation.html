@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Prescription | Medico{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
+
+    .prescription-container {
+        background: white;
+        border-radius: 2.5rem;
+        box-shadow: 0 40px 100px rgba(11, 37, 69, 0.08);
+        overflow: hidden;
+        position: relative;
+    }
+    .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 10rem;
+        color: rgba(11, 37, 69, 0.02);
+        font-weight: 900;
+        pointer-events: none;
+        white-space: nowrap;
+        user-select: none;
+    }
+    .rx-mark {
+        font-family: serif;
+        font-size: 5rem;
+        line-height: 1;
+        color: var(--secondary);
+        opacity: 0.2;
+    }
+    .signature-font {
+        font-family: 'Dancing Script', cursive;
+    }
+    @media print {
+        #navbar, .no-print { display: none !important; }
+        body { background: white !important; padding: 0 !important; }
+        .prescription-container { box-shadow: none; border: 1px solid #eee; border-radius: 0; }
+        main { padding-top: 0 !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-12">
+    <div class="max-w-4xl mx-auto">
+        <!-- ACTIONS -->
+        <div class="flex justify-between items-center mb-8 no-print">
+            <a href="{{ url_for('dashboard') }}" class="flex items-center gap-2 text-sm font-bold text-primary/40 hover:text-primary transition-all">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Patient Portal
+            </a>
+            <button onclick="window.print()" class="px-6 py-3 bg-primary text-white rounded-2xl text-xs font-bold hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2">
+                <i data-lucide="printer" class="w-4 h-4"></i> Print Prescription
+            </button>
+        </div>
+
+        <div class="prescription-container bg-white relative">
+            <div class="watermark uppercase tracking-[1em]">Medico</div>
+            
+            <!-- HEADER -->
+            <div class="p-10 lg:p-16 border-b border-primary/5">
+                <div class="flex flex-col md:row justify-between items-start gap-8">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                                <i data-lucide="activity" class="text-accent w-6 h-6"></i>
+                            </div>
+                            <h2 class="text-3xl font-serif font-bold text-primary">{{ doctor.hospital }}</h2>
+                        </div>
+                        <p class="text-sm text-primary/40 font-medium max-w-sm leading-relaxed">
+                            {{ doctor.hospital_address or 'Premium Clinical Network • Global Health Standards' }}
+                        </p>
+                        <span class="px-3 py-1 bg-secondary/10 text-secondary text-[10px] font-bold rounded uppercase tracking-widest border border-secondary/20 inline-block">
+                            {{ doctor.specialization }}
+                        </span>
+                    </div>
+                    
+                    <div class="md:text-right space-y-1">
+                        <h4 class="text-xl font-bold text-primary">{{ doctor.name }}</h4>
+                        <p class="text-sm text-primary/60 font-medium">{{ doctor.degree or 'MBBS, MD (Internal Medicine)' }}</p>
+                        <p class="text-xs text-primary/40 font-mono">Reg ID: {{ doctor.reg_no or 'MC-2026-X884' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PATIENT INFO -->
+            <div class="px-10 lg:px-16 py-8 bg-bgLight/50 grid md:grid-cols-2 gap-8 border-b border-primary/5">
+                <div class="space-y-2">
+                    <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Patient Details</p>
+                    <h5 class="text-xl font-bold text-primary">{{ consult.patient_name }}</h5>
+                    <p class="text-sm text-primary/60 font-medium">
+                        ID: <span class="font-mono">#{{ consult.user_id|truncate(8, True, '') }}</span> • 
+                        {{ consult.age or '28' }}Y / {{ consult.gender or 'M' }}
+                    </p>
+                </div>
+                <div class="md:text-right space-y-2">
+                    <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Consultation Info</p>
+                    <p class="text-sm font-bold text-primary">Date: {{ consult.consultation_date }}</p>
+                    <p class="text-sm text-primary/60 font-medium">Ref: <span class="font-mono text-xs">{{ consult._id }}</span></p>
+                </div>
+            </div>
+
+            <!-- CLINICAL BODY -->
+            <div class="p-10 lg:p-16">
+                <div class="grid lg:grid-cols-12 gap-16">
+                    <!-- LEFT COLUMN -->
+                    <div class="lg:col-span-4 space-y-12">
+                        <div class="space-y-4">
+                            <h6 class="text-[10px] font-bold text-primary/30 uppercase tracking-widest border-b border-primary/5 pb-2">Clinical Observations</h6>
+                            <div class="space-y-6">
+                                <div>
+                                    <p class="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Diagnosis</p>
+                                    <p class="text-base font-bold text-primary leading-tight">{{ consult.diagnosis or 'Clinical Assessment Pending' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1">Chief Complaint</p>
+                                    <p class="text-sm text-primary/60 font-medium italic leading-relaxed">"{{ consult.chief_complaint or 'Routine evaluation' }}"</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if consult.investigation_requests %}
+                        <div class="space-y-4">
+                            <h6 class="text-[10px] font-bold text-primary/30 uppercase tracking-widest border-b border-primary/5 pb-2">Investigative Requests</h6>
+                            <ul class="space-y-2">
+                                {% for test in consult.investigation_requests %}
+                                <li class="flex items-center gap-2 text-sm text-primary font-bold">
+                                    <i data-lucide="microscope" class="w-3 h-3 text-secondary"></i>
+                                    {{ test }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="lg:col-span-8 relative">
+                        <div class="rx-mark absolute -top-8 -left-8">℞</div>
+                        
+                        <div class="space-y-8">
+                            <h6 class="text-[10px] font-bold text-primary/30 uppercase tracking-widest border-b border-primary/5 pb-2">Medication Protocol</h6>
+                            
+                            <div class="space-y-6">
+                                {% set meds = consult.prescription_text.split('\n') %}
+                                {% for med in meds %}
+                                    {% if med.strip() %}
+                                    <div class="p-6 bg-secondary/5 rounded-2xl border border-secondary/10 relative overflow-hidden group">
+                                        <div class="absolute top-0 right-0 p-3 text-secondary/20 group-hover:text-secondary/40 transition-colors">
+                                            <i data-lucide="pill" class="w-8 h-8"></i>
+                                        </div>
+                                        <h5 class="text-lg font-bold text-primary mb-1">{{ med }}</h5>
+                                        <p class="text-xs text-primary/40 font-medium">Dosage: As strictly directed by physician</p>
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="py-12 text-center text-primary/20 italic font-medium">No pharmacological intervention required at this time.</div>
+                                {% endfor %}
+                            </div>
+
+                            {% if consult.doctor_notes %}
+                            <div class="mt-12 space-y-4">
+                                <h6 class="text-[10px] font-bold text-primary/30 uppercase tracking-widest border-b border-primary/5 pb-2">Special Advice</h6>
+                                <p class="text-sm text-primary/60 font-medium leading-relaxed bg-accent/5 p-6 rounded-2xl italic">
+                                    {{ consult.doctor_notes }}
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="p-10 lg:p-16 bg-bgLight/30">
+                <div class="flex flex-col md:row justify-between items-end gap-12">
+                    <div class="space-y-4">
+                        {% if consult.follow_up_date %}
+                        <div class="p-5 bg-white border border-warm/20 rounded-2xl shadow-sm">
+                            <p class="text-[10px] font-bold text-warm uppercase tracking-widest mb-1">Recommended Follow-up</p>
+                            <p class="text-lg font-bold text-primary flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-4 h-4 text-warm"></i>
+                                {{ consult.follow_up_date }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-center w-64 space-y-2">
+                        <div class=" signature-font text-3xl text-primary opacity-80">{{ doctor.name }}</div>
+                        <div class="w-full h-[1px] bg-primary/10"></div>
+                        <p class="text-[10px] font-bold text-primary/30 uppercase tracking-[0.2em]">Digitally Certified</p>
+                    </div>
+                </div>
+                
+                <div class="mt-16 pt-8 border-t border-primary/5 text-center">
+                    <p class="text-[10px] text-primary/30 font-medium max-w-2xl mx-auto leading-relaxed">
+                        This document serves as an official clinical record issued via the Medico Network. 
+                        Valid for pharmacological dispensing for 180 days from the date of certification. 
+                        Security Hash: <span class="font-mono">{{ consult._id }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

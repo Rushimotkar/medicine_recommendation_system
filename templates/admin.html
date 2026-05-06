@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Control | Medico{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pb-24">
+    <!-- PAGE HEADER -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+        <div class="space-y-4">
+            <span class="px-4 py-1.5 bg-warm/10 text-warm text-[10px] font-bold rounded-full uppercase tracking-[0.2em]">Administrative Access</span>
+            <h1 class="text-5xl font-serif font-bold text-primary">System <span class="text-secondary">Overview</span></h1>
+            <p class="text-primary/60 font-medium leading-relaxed max-w-xl">Comprehensive analytics and user management portal for the Medico clinical network.</p>
+        </div>
+        
+        <div class="flex gap-4">
+            <div class="glass px-6 py-4 rounded-2xl border-white/40 shadow-xl">
+                <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest mb-1">System Status</p>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                    <span class="text-sm font-bold text-primary">All Nodes Operational</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div class="premium-card p-8 group hover:border-secondary transition-all">
+            <div class="flex justify-between items-start mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <span class="text-accent text-xs font-bold font-mono">+12%</span>
+            </div>
+            <h4 class="text-4xl font-serif font-bold text-primary mb-1">{{ total_users }}</h4>
+            <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Total Registered Patients</p>
+        </div>
+
+        <div class="premium-card p-8 group hover:border-accent transition-all">
+            <div class="flex justify-between items-start mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                    <i data-lucide="activity" class="w-6 h-6"></i>
+                </div>
+                <span class="text-secondary text-xs font-bold font-mono">Real-time</span>
+            </div>
+            <h4 class="text-4xl font-serif font-bold text-primary mb-1">{{ total_checks }}</h4>
+            <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Symptom Analyses Performed</p>
+        </div>
+
+        <div class="premium-card p-8 group hover:border-warm transition-all">
+            <div class="flex justify-between items-start mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-warm/10 flex items-center justify-center text-warm group-hover:scale-110 transition-transform">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <span class="text-primary/20 text-xs font-bold font-mono">Encrypted</span>
+            </div>
+            <h4 class="text-4xl font-serif font-bold text-primary mb-1">{{ total_records }}</h4>
+            <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Clinical Records Secured</p>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-10">
+        <!-- RECENT REGISTRATIONS -->
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-serif font-bold text-primary">Recent Registrations</h3>
+                <i data-lucide="arrow-right-circle" class="w-5 h-5 text-primary/20"></i>
+            </div>
+            
+            <div class="glass rounded-[2rem] overflow-hidden border-white/40 shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-primary/[0.02] border-b border-primary/5">
+                                <th class="px-6 py-4 text-[10px] font-bold text-primary/40 uppercase tracking-widest">Patient Name</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-primary/40 uppercase tracking-widest">Email Identity</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-primary/40 uppercase tracking-widest">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary/5">
+                            {% for u in recent_users %}
+                            <tr class="hover:bg-primary/[0.01] transition-colors">
+                                <td class="px-6 py-5">
+                                    <span class="text-sm font-bold text-primary">{{ u.name }}</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="text-xs font-mono text-primary/50">{{ u.email }}</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <button class="text-secondary hover:text-primary transition-colors">
+                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="px-6 py-10 text-center text-sm text-primary/30 font-medium">No registrations detected.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECENT ANALYSES -->
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-serif font-bold text-primary">Recent Analyses</h3>
+                <i data-lucide="history" class="w-5 h-5 text-primary/20"></i>
+            </div>
+            
+            <div class="glass rounded-[2rem] overflow-hidden border-white/40 shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-primary/[0.02] border-b border-primary/5">
+                                <th class="px-6 py-4 text-[10px] font-bold text-primary/40 uppercase tracking-widest">Symptom Profile</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-primary/40 uppercase tracking-widest">Protocol</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-primary/40 uppercase tracking-widest">Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary/5">
+                            {% for chk in recent_checks %}
+                            <tr class="hover:bg-primary/[0.01] transition-colors">
+                                <td class="px-6 py-5">
+                                    <span class="text-xs font-medium text-primary/60 truncate block max-w-[150px]">{{ chk.symptoms }}</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="text-xs font-bold text-secondary">{{ chk.predicted_medicine }}</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="w-2 h-2 rounded-full inline-block {{ 'bg-red-500' if chk.severity == 'Severe' else 'bg-accent' }}"></span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="px-6 py-10 text-center text-sm text-primary/30 font-medium">No activity recorded.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Body Metrics | Medico{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 pt-16 pb-24">
+    <!-- PAGE HEADER -->
+    <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <span class="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-[0.2em]">Physiological Analysis</span>
+        <h1 class="text-5xl font-serif font-bold text-primary">BMI <span class="text-secondary">Analysis</span></h1>
+        <p class="text-primary/60 font-medium leading-relaxed">Quantify your body composition using advanced anthropometric indices for a holistic view of your metabolic health.</p>
+    </div>
+
+    <div class="max-w-xl mx-auto">
+        <div class="premium-card p-10 lg:p-14">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
+                    <i data-lucide="scale" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-primary">Metric Input</h3>
+                    <p class="text-[10px] text-primary/40 font-bold uppercase tracking-widest">Biometric Integration Active</p>
+                </div>
+            </div>
+
+            <form method="POST" class="space-y-8">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Body Mass (kg)</label>
+                    <div class="relative">
+                        <i data-lucide="weight" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20"></i>
+                        <input type="number" step="0.1" name="weight" required placeholder="e.g. 70.0" class="w-full pl-12 pr-6 py-4 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-primary/40 uppercase tracking-widest ml-1">Stature (cm)</label>
+                    <div class="relative">
+                        <i data-lucide="ruler" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20"></i>
+                        <input type="number" step="0.1" name="height" required placeholder="e.g. 175.0" class="w-full pl-12 pr-6 py-4 bg-bgLight border border-primary/5 rounded-2xl focus:ring-2 focus:ring-secondary/20 outline-none font-medium transition-all">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-5 bg-primary text-white font-bold rounded-2xl hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group">
+                    Calculate Metabolic Index
+                    <i data-lucide="calculator" class="w-4 h-4 group-hover:rotate-12 transition-transform"></i>
+                </button>
+            </form>
+
+            {% if bmi %}
+            <div class="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="p-8 rounded-[2rem] border-2 border-dashed border-primary/10 text-center space-y-4">
+                    <p class="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Computed Result</p>
+                    <div class="space-y-1">
+                        <h4 class="text-4xl font-serif font-bold text-primary">{{ bmi }}</h4>
+                        <p class="text-sm font-bold uppercase tracking-widest {{ 'text-red-500' if color == 'alert' else 'text-secondary' if color == 'success' else 'text-warm' }}">
+                            {{ category }}
+                        </p>
+                    </div>
+                    
+                    <div class="pt-6 border-t border-primary/5 flex items-start gap-4 text-left">
+                        <i data-lucide="info" class="w-5 h-5 text-secondary mt-0.5 shrink-0"></i>
+                        <p class="text-[11px] text-primary/40 font-medium leading-relaxed italic">
+                            BMI is a standard screening tool but does not directly measure body fat or metabolic health. Factors such as muscle mass, bone density, and overall body composition are not accounted for.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
