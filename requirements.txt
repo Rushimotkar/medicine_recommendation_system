@@ -13,3 +13,5 @@ werkzeug
 authlib
 certifi
 dnspython
+gunicorn
+python-dotenv
