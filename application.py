@@ -50,7 +50,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Add hasattr to Jinja2 globals
 app.jinja_env.globals.update(hasattr=hasattr, getattr=getattr)
 
-mongo_uri = os.environ.get('MONGO_URI', 'mongodb+srv://rushikeshmotkar14:rmotkar9921@cluster0.04bd5ch.mongodb.net/?appName=Cluster0')
+mongo_uri = os.environ.get('MONGO_URI', '')
 
 # MongoDB connection with robust SSL/TLS error handling
 def create_mongo_connection():
