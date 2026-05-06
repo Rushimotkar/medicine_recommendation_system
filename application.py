@@ -41,6 +41,7 @@ from src.pipeline.prediction_pipeline import (
 
 # ── Flask App ──────────────────────────────────
 app = Flask(__name__)
+application=app
 app.secret_key = 'super_secret_medico_key'
 # Database Configuration (MongoDB)
 app.config['UPLOAD_FOLDER'] = os.path.join('artifacts', 'uploads')
@@ -49,7 +50,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Add hasattr to Jinja2 globals
 app.jinja_env.globals.update(hasattr=hasattr, getattr=getattr)
 
-mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+mongo_uri = os.environ.get('MONGO_URI', 'mongodb+srv://rushikeshmotkar14:rmotkar9921@cluster0.04bd5ch.mongodb.net/?appName=Cluster0')
 
 # MongoDB connection with robust SSL/TLS error handling
 def create_mongo_connection():
