@@ -151,15 +151,12 @@ google = oauth.register(
     name='google',
     client_id=os.environ.get('GOOGLE_CLIENT_ID'),
     client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    access_token_params=None,
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    authorize_params=None,
-    api_base_url='https://www.googleapis.com/oauth2/v1/',
-    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',  # This is for fetching user info
-    client_kwargs={'scope': 'openid email profile'},
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    redirect_uri='http://localhost:5000/auth/google'
+    client_kwargs={
+        'scope': 'openid email profile',
+        'token_endpoint_auth_method': 'client_secret_basic'
+    },
+    update_token=lambda token, refresh_token=None, access_token=None: None
 )
 
 # Seed health tips if empty or fewer than 10
@@ -490,11 +487,16 @@ def google_login():
 @app.route('/auth/google')
 def google_authorize():
     token = google.authorize_access_token()
-    resp = google.get('userinfo')
-    user_info = resp.json()
+    
+    # Extract user info from id_token (OpenID Connect)
+    user_info = token.get('userinfo')
+    
+    if not user_info:
+        flash("Could not retrieve user information from Google.")
+        return redirect(url_for('login'))
     
     email = user_info.get('email')
-    google_id = user_info.get('id') or user_info.get('sub')
+    google_id = user_info.get('sub')  # 'sub' is the standard OpenID Connect user ID claim
     name = user_info.get('name')
     
     if not email:
